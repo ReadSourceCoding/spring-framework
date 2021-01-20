@@ -430,10 +430,13 @@ public class BeanDefinitionParserDelegate {
 			}
 		}
 
+		// 检查 beanName 是否重复
 		if (containingBean == null) {
 			checkNameUniqueness(beanName, aliases, ele);
 		}
 
+		// 主要看这个方法，重要程度：5
+		// <bean> 标签解析的核心方法
 		AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);
 		if (beanDefinition != null) {
 			if (!StringUtils.hasText(beanName)) {
@@ -512,17 +515,26 @@ public class BeanDefinitionParserDelegate {
 		}
 
 		try {
+			// 创建 GenericBeanDefinition 对象
 			AbstractBeanDefinition bd = createBeanDefinition(className, parent);
 
+			// 主要看这个方法，重要程度：5
+			// 解析 bean 标签的属性，并把解析出来的属性设置到 BeanDefinition 对象中
 			parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);
 			bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));
 
+			// 解析 bean 中的 meta 标签
 			parseMetaElements(ele, bd);
+			// 解析 bean 中的 lookup-method 标签，重要程度：2
 			parseLookupOverrideSubElements(ele, bd.getMethodOverrides());
+			// 解析 bean 中的 replaced-method 标签，重要程度：2
 			parseReplacedMethodSubElements(ele, bd.getMethodOverrides());
 
+			// 解析 bean 中的 constructorArg-tag 标签，重要程度：2
 			parseConstructorArgElements(ele, bd);
+			// 解析 bean 中的 property 标签，重要程度：2
 			parsePropertyElements(ele, bd);
+			// 可不看，用不到
 			parseQualifierElements(ele, bd);
 
 			bd.setResource(this.readerContext.getResource());

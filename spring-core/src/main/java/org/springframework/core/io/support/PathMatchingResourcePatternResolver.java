@@ -774,6 +774,8 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		}
 		fullPattern = fullPattern + StringUtils.replace(pattern, File.separator, "/");
 		Set<File> result = new LinkedHashSet<>(8);
+		// 主要看这个方法，重要程度：5
+		//递归寻找文件
 		doRetrieveMatchingFiles(fullPattern, rootDir, result);
 		return result;
 	}
@@ -794,6 +796,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		}
 		for (File content : listDirectory(dir)) {
 			String currPath = StringUtils.replace(content.getAbsolutePath(), File.separator, "/");
+			//如果是一个文件夹，则递归
 			if (content.isDirectory() && getPathMatcher().matchStart(fullPattern, currPath + "/")) {
 				if (!content.canRead()) {
 					if (logger.isDebugEnabled()) {
@@ -805,6 +808,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 					doRetrieveMatchingFiles(fullPattern, content, result);
 				}
 			}
+			//如果是一个文件，则加入到容器
 			if (getPathMatcher().match(fullPattern, currPath)) {
 				result.add(content);
 			}

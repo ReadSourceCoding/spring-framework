@@ -513,15 +513,47 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		return this.applicationListeners;
 	}
 
+	/**
+	 * 该方法是 spring 容器初始化的核心方法。是 spring 容器初始化的核心流程，是一个典型的父类模板设计模式的运用
+	 * 根据不同的上下文对象，会调到不同的上下文对象子类方法中
+	 *
+	 * 核心上下文子类有：
+	 * ClassPathXmlApplicationContext
+	 * FileSystemXmlApplicationContext
+	 * AnnotationConfigApplicationContext
+	 * EnbeddedWebApplicationContext(springboot)
+	 *
+	 * 方法重要程度：
+	 * 0：不重要，可以不看
+	 * 1：一般重要，可看可不看
+	 * 5：非常重要，一定要看
+	 * 必须读的：重要程度 5
+	 */
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
+			//为容器初始化做准备，重要程度：0
 			// Prepare this context for refreshing.
 			prepareRefresh();
 
+			/**
+			 * 重要程度：5
+			 * 1、创建 BeanFactory 对象
+			 * 2、xml 解析
+			 * 		传统标签解析： bean、import 等
+			 * 	    自定义标签解析 如：<context:component-scan base-package="com.duyuanma.william">
+			 * 	    自定义标签解析流程：
+			 * 	       a、根据当前解析标签的头信息找到对应的 namespaceUri
+			 * 	       b、加载 spring 所有 jar 中的 spring.handlers 文件，并建立映射关系
+			 * 	       c、根据 namespaceUri 从映射关系中找到对应的实现了 NamespaceHandler 接口的类
+			 * 	       d、调用类的 init 方法， init 方法是注册了各种自定义标签的解析类
+			 * 	       e、根据 namespaceUri 找到对应的解析类，然后调用 paser 方法完成标签解析
+			 * 3、把解析出来的 xml 标签封装成 BeanDefinition 对象
+			 */
 			// Tell the subclass to refresh the internal bean factory.
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
+			// 给 beanFactory 设置一些属性值，重要程度 0
 			// Prepare the bean factory for use in this context.
 			prepareBeanFactory(beanFactory);
 
@@ -530,24 +562,43 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
+				/**
+				 * 完成对两个接口调用
+				 * BeanDefinitionRegistryPostProcessor 定义在执行实例化之前，可以完成 BeanDefinition 的修改和注册
+				 * BeanFactoryPostProcessor
+ 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				// 把实现了 BeanFactoryPostProcessor 接口的类实例化，并且加入到 beanFactory 容器中
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				// 国际化，重要程度：2
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				// 初始化事件管理类，观察者设计模式
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				//在springboot 中用来做内嵌tomcat 启用的，着重理解模板设计模式
 				onRefresh();
 
 				// Check for listener beans and register them.
+				//往时间管理类中注册事件类
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				/**
+				 * 这个方式是spring 中最重要的方法，没有之一
+				 * 一定要理解一定要看
+				 * 1、bean 实例化过程
+				 * 2、ioc
+				 * 3、注解支持
+				 * 4、BeanFactoryPostProcessor 的执行
+				 * 5、aop 的入口
+				 */
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -635,6 +686,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		// 核心方法，模板设计模式，重要程度：5
 		refreshBeanFactory();
 		return getBeanFactory();
 	}
@@ -850,6 +902,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.
+		// 设置类型转换器
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
@@ -876,6 +929,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		// 主要看这个方法，重要程度：5
 		beanFactory.preInstantiateSingletons();
 	}
 

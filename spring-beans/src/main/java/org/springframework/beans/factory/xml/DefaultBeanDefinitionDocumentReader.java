@@ -93,6 +93,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
 		this.readerContext = readerContext;
+		// 主要看这个方法，重要程度：5
+		// 把 root 节点传进去
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
 
@@ -146,6 +148,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		preProcessXml(root);
+		// 主要看这个方法，重要程度：5
+		// 标签具体解析过程
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 
@@ -173,9 +177,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				if (node instanceof Element) {
 					Element ele = (Element) node;
 					if (delegate.isDefaultNamespace(ele)) {
+						// 默认标签解析
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						//自定义标签解析
 						delegate.parseCustomElement(ele);
 					}
 				}
@@ -187,12 +193,16 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	}
 
 	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
+		// import 标签解析，重要程度：1
 		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
 			importBeanDefinitionResource(ele);
 		}
+		// alias 标签解析，重要程度：1
 		else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) {
 			processAliasRegistration(ele);
 		}
+		// 主要看这个方法，重要程度：5
+		// bean 标签解析
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
 			processBeanDefinition(ele, delegate);
 		}
@@ -303,11 +313,15 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+		// 主要看这个方法，重要程度：5
+		// 解析 document ，封装成 BeanDefinition
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
+			// 装饰者设计模式，加上 SPI 思想
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.
+				// 完成 document 到 BeanDefinition 对象转换后，对BeanDefinition 对象进行缓存注册
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
 			}
 			catch (BeanDefinitionStoreException ex) {

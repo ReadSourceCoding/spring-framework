@@ -868,12 +868,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Iterate over a copy to allow for init methods which in turn register new bean definitions.
 		// While this may not be part of the regular factory bootstrap, it does otherwise work fine.
+		// xml 解析时，把所有beanName 都缓存到 beanDefinitionNames 了
 		List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
 
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
+			//把父 BeanDefinition 里面的属性拿到子 BeanDefinition 中
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			// 如果不是抽象的，是单例的，非懒加载的就实例化
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+				// 判断 bean 是否实现了 FactoryBean 接口
 				if (isFactoryBean(beanName)) {
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
@@ -894,6 +898,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					}
 				}
 				else {
+					// 主要看这个方法，重要程度：5
+					// bean 实例化过程
 					getBean(beanName);
 				}
 			}
@@ -938,7 +944,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 						"Validation of bean definition failed", ex);
 			}
 		}
-
+		// 先判断 BeanDefinition 是否已经注册
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
 		if (existingDefinition != null) {
 			if (!isAllowBeanDefinitionOverriding()) {
@@ -982,7 +988,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			else {
 				// Still in startup registration phase
+				// 把 beanDefinition 缓存到 map 中
 				this.beanDefinitionMap.put(beanName, beanDefinition);
+				//把beanName 放到 beanDefinitionNames list 中
+				// 这个list 着重记住，bean 实例化的时候需要用到
 				this.beanDefinitionNames.add(beanName);
 				removeManualSingletonName(beanName);
 			}

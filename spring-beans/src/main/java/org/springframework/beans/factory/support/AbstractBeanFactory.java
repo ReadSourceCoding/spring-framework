@@ -247,7 +247,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		// 根据 beanName 缓存中拿实例
 		Object sharedInstance = getSingleton(beanName);
+		// 如果缓存中能拿到实例
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
 				if (isSingletonCurrentlyInCreation(beanName)) {
@@ -258,12 +260,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
+			// 该方法是 FactoryBean 接口的调用入口
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
+			// 如果SingletonObjects 缓存里面灭有则走下面
+			// 如果是 scope 是 prototype 的，校验是否有出现循环依赖，如果有则直接报错
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
@@ -295,10 +300,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			try {
+				// 父子 BeanDefinition 合并
 				RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
+				// 获取依赖对象属性，依赖对象要先实例化
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
@@ -306,8 +313,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 									"Circular depends-on relationship between '" + beanName + "' and '" + dep + "'");
 						}
+						// 注册依赖bean
 						registerDependentBean(dep, beanName);
 						try {
+							// 实例化
 							getBean(dep);
 						}
 						catch (NoSuchBeanDefinitionException ex) {
@@ -318,9 +327,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
+				// 主要看这个方法，重要程度：5
+				// 大部分是单例情况
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							// 主要看这个方法，重要程度：5
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
@@ -331,6 +343,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw ex;
 						}
 					});
+					// 该方法是 FactoryBean 接口的调用入口
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
