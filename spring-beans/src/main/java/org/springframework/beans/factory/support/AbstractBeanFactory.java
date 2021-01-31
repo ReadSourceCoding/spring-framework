@@ -248,6 +248,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		// Eagerly check singleton cache for manually registered singletons.
 		// 根据 beanName 缓存中拿实例
+		//1、单例循环依赖 - 可以
+		//2、构造函数循环依赖 - 不可以
+		//3、多例循环依赖 - 不可以
 		Object sharedInstance = getSingleton(beanName);
 		// 如果缓存中能拿到实例
 		if (sharedInstance != null && args == null) {
@@ -270,6 +273,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			// 如果SingletonObjects 缓存里面灭有则走下面
 			// 如果是 scope 是 prototype 的，校验是否有出现循环依赖，如果有则直接报错
 			if (isPrototypeCurrentlyInCreation(beanName)) {
+				//多例不可以循环依赖，报错点
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 

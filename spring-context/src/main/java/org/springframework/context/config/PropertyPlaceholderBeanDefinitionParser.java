@@ -46,6 +46,7 @@ class PropertyPlaceholderBeanDefinitionParser extends AbstractPropertyLoadingBea
 		// placeholders against system properties is a function of the Environment and
 		// its current set of PropertySources.
 		if (SYSTEM_PROPERTIES_MODE_DEFAULT.equals(element.getAttribute(SYSTEM_PROPERTIES_MODE_ATTRIBUTE))) {
+			//todo
 			return PropertySourcesPlaceholderConfigurer.class;
 		}
 

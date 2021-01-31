@@ -301,7 +301,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				if (candidateConstructors == null) {
 					Constructor<?>[] rawCandidates;
 					try {
-						//æ‹¿åˆ°ç±»é‡Œé¢çš„æ‰€æœ‰æ„é€ å‡½æ•°
+						//ÄÃµ½ÀàÀïÃæµÄËùÓĞ¹¹Ôìº¯Êı
 						rawCandidates = beanClass.getDeclaredConstructors();
 					}
 					catch (Throwable ex) {
@@ -321,8 +321,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						else if (primaryConstructor != null) {
 							continue;
 						}
-						//å®ä¾‹åŒ–å¸¦æœ‰@Autowired çš„æ³¨è§£æœ‰å‚æ„é€ å‡½æ•°
-						//æ‰¾ @Autowired æ³¨è§£
+						//ÊµÀı»¯´øÓĞ@Autowired µÄ×¢½âÓĞ²Î¹¹Ôìº¯Êı
+						//ÕÒ @Autowired ×¢½â
 						MergedAnnotation<?> ann = findAutowiredAnnotation(candidate);
 						if (ann == null) {
 							Class<?> userClass = ClassUtils.getUserClass(beanClass);
@@ -375,7 +375,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						}
 						candidateConstructors = candidates.toArray(new Constructor<?>[0]);
 					}
-					//å®ä¾‹åŒ–æ²¡æœ‰@Autowired çš„æœ‰å‚æ„é€ å‡½æ•°
+					//ÊµÀı»¯Ã»ÓĞ@Autowired µÄÓĞ²Î¹¹Ôìº¯Êı
 					else if (rawCandidates.length == 1 && rawCandidates[0].getParameterCount() > 0) {
 						candidateConstructors = new Constructor<?>[] {rawCandidates[0]};
 					}
@@ -641,7 +641,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				Assert.state(beanFactory != null, "No BeanFactory available");
 				TypeConverter typeConverter = beanFactory.getTypeConverter();
 				try {
-					//å¼•ç”¨çš„æ•°æ®ç±»å‹ä¸€å®šä¼šè§¦å‘ beanFactory.getBean() å±æ€§çš„ä¾èµ–æ³¨å…¥æ“ä½œ
+					//ÒıÓÃµÄÊı¾İÀàĞÍÒ»¶¨»á´¥·¢ beanFactory.getBean() ÊôĞÔµÄÒÀÀµ×¢Èë²Ù×÷
 					value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
 				}
 				catch (BeansException ex) {
@@ -670,7 +670,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			if (value != null) {
 				ReflectionUtils.makeAccessible(field);
-				//å‘å°„ä¾èµ–æ³¨å…¥
+				//·¢ÉäÒÀÀµ×¢Èë
 				field.set(bean, value);
 			}
 		}
@@ -757,6 +757,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			if (arguments != null) {
 				try {
+					//·½·¨±ä³É¿ÉÒÔ·ÃÎÊ
 					ReflectionUtils.makeAccessible(method);
 					method.invoke(bean, arguments);
 				}
